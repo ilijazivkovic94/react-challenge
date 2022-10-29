@@ -1,6 +1,5 @@
-import React, { createContext, useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { SettingContext } from './contexts/SettingContext';
-import logo from './logo.svg';
 import './App.css';
 import { ValueType } from './constants/DataTypes';
 import SongsList from './components/SongsList';
@@ -14,24 +13,25 @@ function App() {
     isPlaying: false,
   });
 
-  const storeValuesToLocalStorage = useCallback(() => {
-    localStorage.setItem('@config', JSON.stringify(values));
-    return values;
-  }, [values]);
+  const storeValuesToLocalStorage = useCallback((curr_val: ValueType) => {
+    localStorage.setItem('@config', JSON.stringify(curr_val));
+    return curr_val;
+  }, []);
+
+  const storeAllValues = useCallback((val: ValueType) => {
+    setValues(val);
+    storeValuesToLocalStorage(val);
+  }, [storeValuesToLocalStorage]);
 
   useEffect(() => {
     const configValue = localStorage.getItem('@config');
     if (configValue) {
-      setValues(JSON.parse(configValue));
+      storeAllValues(JSON.parse(configValue));
     }
-
-    return () => {
-      storeValuesToLocalStorage()
-    };
-  }, []);
+  }, [storeAllValues]);
   
   return (
-    <SettingContext.Provider value={[values, setValues]}>
+    <SettingContext.Provider value={[values, storeAllValues]}>
       <div className="App">
         <SongsList />
         <Player />
